@@ -2,12 +2,12 @@ import PropTypes from 'prop-types';
 import ImageGalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
 import { ImagesList } from './ImageGallery.styled';
 
-const ImageGallery = ({ imagesData }) => {
+const ImageGallery = ({ imagesData, firstRef }) => {
   return (
     <ImagesList>
-      {imagesData.map(({ id, webformatURL, largeImageURL, tags }) => {
+      {imagesData.map(({ id, webformatURL, largeImageURL, tags, first }) => {
         return (
-          <li key={id}>
+          <li key={id} ref={first && firstRef}>
             <ImageGalleryItem
               previewURL={webformatURL}
               imageURL={largeImageURL}

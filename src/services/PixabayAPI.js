@@ -27,3 +27,10 @@ export function normalizeData(data) {
     tags,
   }));
 }
+
+export function addFirstOnPageFlag(data) {
+  const dataWithFirstFlag = [...data];
+  dataWithFirstFlag[0].first = true;
+
+  return dataWithFirstFlag;
+}

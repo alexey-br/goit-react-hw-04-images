@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Button from './Button/Button';
 import Loader from './Loader/Loader';
-// import scrollToNewImages from 'services/scroll-to-new-images';
 import {
   fetchImages,
   normalizeData,
+  addFirstOnPageFlag,
   IMAGES_PER_PAGE,
 } from 'services/PixabayAPI';
 import NoImageAlert from './NoImageAlert/NoImageAlert';
 import UseSearchMessage from './UseSearchMessage/UseSearchMessage';
+import scrollToNextPage from 'services/scrollToNextPage';
 
 const Status = {
   IDLE: 'idle',
@@ -19,30 +20,28 @@ const Status = {
   REJECTED: 'rejected',
 };
 
-// const initialState = {
-//   page: 1,
-//   imageQuery: '',
-//   imagesData: [],
-//   imagesNumber: null,
-//   pageHight: null,
-//   status: Status.IDLE,
-// };
-
 export default function App() {
   const [page, setPage] = useState(1);
   const [imageQuery, setImageQuery] = useState('');
   const [imagesData, setImagesData] = useState([]);
   const [imagesNumber, setImagesNumber] = useState(null);
-  const [pageHight, setPageHight] = useState(null);
   const [status, setStatus] = useState(Status.IDLE);
+
+  const firstOnPageRef = useRef(null);
 
   useEffect(() => {
     if (!imageQuery) return;
-    setStatus(Status.PENDING);
     getImages(imageQuery, page);
   }, [imageQuery, page]);
 
+  useEffect(() => {
+    if (imagesData.length <= IMAGES_PER_PAGE) return;
+
+    scrollToNextPage(firstOnPageRef.current);
+  }, [imagesData]);
+
   const getImages = async (imageQuery, page) => {
+    setStatus(Status.PENDING);
     try {
       const { hits, totalHits } = await fetchImages(imageQuery, page);
 
@@ -52,7 +51,8 @@ export default function App() {
       }
 
       const newImagesData = normalizeData(hits);
-      setImagesData(prevData => [...prevData, ...newImagesData]);
+      const dataWithFirstFlag = addFirstOnPageFlag(newImagesData);
+      setImagesData(prevData => [...prevData, ...dataWithFirstFlag]);
       setImagesNumber(totalHits);
       setStatus(Status.RESOLVED);
     } catch (error) {
@@ -62,10 +62,7 @@ export default function App() {
   };
 
   const handleSearch = text => {
-    if (!text) {
-      console.log('initial');
-      return;
-    }
+    if (!text) return;
 
     setImageQuery(prevQuery => {
       if (text !== prevQuery) {
@@ -78,7 +75,6 @@ export default function App() {
 
   const handleNextPage = () => {
     setPage(prevPage => prevPage + 1);
-    setPageHight(document.body.scrollHeight);
   };
 
   const checkForNextPage = () => {
@@ -91,9 +87,9 @@ export default function App() {
       <Searchbar onSearch={handleSearch} />
       <main>
         {status === Status.IDLE && <UseSearchMessage />}
-        <ImageGallery imagesData={imagesData} />
+        <ImageGallery imagesData={imagesData} firstRef={firstOnPageRef} />
         {status === Status.RESOLVED && checkForNextPage() && (
-          <Button onClick={handleNextPage}>Load more</Button>
+          <Button onClick={handleNextPage} />
         )}
         {status === Status.PENDING && <Loader />}
         {status === Status.REJECTED && <NoImageAlert />}

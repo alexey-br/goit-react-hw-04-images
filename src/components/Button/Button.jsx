@@ -1,8 +1,12 @@
 import PropTypes from 'prop-types';
 import { LoadMoreBtn } from './Button.styled';
 
-const Button = ({ onClick }) => {
-  return <LoadMoreBtn onClick={() => onClick()}>Load more</LoadMoreBtn>;
+const Button = ({ onClick, refElem }) => {
+  return (
+    <LoadMoreBtn onClick={() => onClick()} ref={refElem}>
+      Load more
+    </LoadMoreBtn>
+  );
 };
 
 export default Button;
