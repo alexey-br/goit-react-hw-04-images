@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
   Wrapper,
@@ -12,13 +13,17 @@ const initialValues = {
   query: '',
 };
 
-const Searchbar = ({ onSearch }) => {
+const Searchbar = ({ onSearch, barRef }) => {
+  useEffect(() => {
+    barRef.offset = barRef.current.scrollHeight;
+  }, [barRef]);
+
   const handleSubmit = (values, _) => {
     onSearch(values.query.trim());
   };
 
   return (
-    <Wrapper>
+    <Wrapper ref={barRef}>
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         <SearchForm>
           <SearchFormBtn type="submit">
@@ -42,4 +47,5 @@ export default Searchbar;
 
 Searchbar.propTypes = {
   onSearch: PropTypes.func.isRequired,
+  barRef: PropTypes.shape({}).isRequired,
 };

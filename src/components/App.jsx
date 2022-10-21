@@ -28,6 +28,7 @@ export default function App() {
   const [status, setStatus] = useState(Status.IDLE);
 
   const firstOnPageRef = useRef(null);
+  const barRef = useRef(null);
 
   useEffect(() => {
     if (!imageQuery) return;
@@ -37,7 +38,7 @@ export default function App() {
   useEffect(() => {
     if (imagesData.length <= IMAGES_PER_PAGE) return;
 
-    scrollToNextPage(firstOnPageRef.current);
+    scrollToNextPage(firstOnPageRef.current, barRef, 8);
   }, [imagesData]);
 
   const getImages = async (imageQuery, page) => {
@@ -84,7 +85,7 @@ export default function App() {
 
   return (
     <>
-      <Searchbar onSearch={handleSearch} />
+      <Searchbar onSearch={handleSearch} barRef={barRef} />
       <main>
         {status === Status.IDLE && <UseSearchMessage />}
         <ImageGallery imagesData={imagesData} firstRef={firstOnPageRef} />
